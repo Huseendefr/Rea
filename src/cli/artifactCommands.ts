@@ -4,6 +4,7 @@ import {
 } from "../domain/firmware/espFlashSelection.js";
 import type { ArtifactTargetSelection } from "../application/DirectAnalysis.js";
 import { projectCliAnalysisResult } from "./projectCliAnalysisResult.js";
+import { cliDefaultedDecimalField, cliIntegerArgument } from "./options.js";
 import {
   analysisEvidenceDeliveryOptions,
   cliEvidenceDeliveryInputError,
@@ -55,12 +56,12 @@ export const registerArtifactCommands = (
       root: keyedArchiveInputSchema.shape.root.describe(
         "Named $top archive root",
       ),
-      offset: keyedArchiveInputSchema.shape.offset.describe(
-        "First original object-table index",
-      ),
-      limit: keyedArchiveInputSchema.shape.limit.describe(
-        "Maximum object-table entries to return",
-      ),
+      offset: cliDefaultedDecimalField(
+        keyedArchiveInputSchema.shape.offset,
+      ).describe("First original object-table index"),
+      limit: cliDefaultedDecimalField(
+        keyedArchiveInputSchema.shape.limit,
+      ).describe("Maximum object-table entries to return"),
     }),
     run: ({ args, options }) =>
       logCliCommand(logger, CLI_COMMANDS.inspectKeyedArchive, () =>
@@ -134,17 +135,10 @@ const registerAssetCatalogCommand = (
       path: localPathStringSchema.describe("Apple .app bundle path"),
     }),
     options: z.object({
-      offset: z
-        .number()
-        .int()
-        .min(0)
+      offset: cliIntegerArgument(0)
         .default(0)
         .describe("First metadata record"),
-      limit: z
-        .number()
-        .int()
-        .min(1)
-        .max(10_000)
+      limit: cliIntegerArgument(1, 10_000)
         .default(1_000)
         .describe("Maximum records to return"),
     }),
