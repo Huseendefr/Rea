@@ -223,6 +223,42 @@ export const expandMcpAddEqualsArguments = (
   });
 
 /**
+ * The first token at or after `from` that is neither an option `mcp add`
+ * accepts nor an option's value. `mcp add` takes options only, and Incur skips
+ * anything else, so such a word would be dropped while the registration still
+ * succeeded. The caller passes the index just past the binary name and `add`,
+ * so this never has to guess where the command starts.
+ */
+export const unexpectedMcpAddArguments = (
+  command: IncurBuiltinArgumentSplit["command"],
+  from: number,
+): string | undefined => {
+  for (let index = from; index < command.length; index += 1) {
+    const token = command[index]!;
+    if (token === "--agent" || token === "--command" || token === "-c") {
+      // Its value follows whatever it looks like: `--command=--help` expands
+      // to a value that starts with `-`, and reading that as a stray word
+      // rejects a registration the caller explicitly asked for. An absent
+      // value is the missing-value guard's finding.
+      if (command[index + 1] !== undefined) index += 1;
+      continue;
+    }
+    // An empty `--flag=` form is the empty-value guard's finding, not a stray
+    // argument; a non-empty equals form never reaches here because callers pass
+    // the expanded tokens.
+    if (
+      token === "-c=" ||
+      token === "--agent=" ||
+      token === "--command=" ||
+      token === "--no-global"
+    )
+      continue;
+    return token;
+  }
+  return undefined;
+};
+
+/**
  * Agent selection for an `mcp add` command, after equals-form expansion.
  * Single owner: the project-scope guard and the `mcp add` dispatch in
  * `cli.ts` both consume this. Incur consumes command values before agent
