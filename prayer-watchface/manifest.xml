@@ -7,9 +7,5 @@
     <iq:permissions>
       <iq:uses-permission id="Positioning"/>
     </iq:permissions>
-    <iq:languages>
-      <iq:language>ara</iq:language>
-    </iq:languages>
-    <iq:barrels/>
   </iq:application>
 </iq:manifest>
